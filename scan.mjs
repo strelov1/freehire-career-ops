@@ -12,7 +12,9 @@
  * Files prefixed with _ are shared helpers (e.g. _http.mjs) and are never
  * loaded as providers. Adding a new HTTP/API source = drop a *.mjs into
  * providers/. Local executable parsers use `providers/local-parser.mjs` when
- * `parser.command` + `parser.script` are set in portals.yml.
+ * `parser.command` + `parser.script` are set in portals.yml. CLI-backed
+ * sources (e.g. `providers/freehire.mjs`) shell out to a binary the same way
+ * and ignore the HTTP ctx.
  *
  * A tracked_companies entry can set `provider:` explicitly to bypass
  * URL-based auto-detection. The `transport:` field is reserved for future

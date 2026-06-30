@@ -67,3 +67,6 @@ package-lock.json
 
 # Planning (local scratchpad)
 plan/
+
+# freehire JD cache (scan-time url→slug map)
+data/freehire-cache.jsonl

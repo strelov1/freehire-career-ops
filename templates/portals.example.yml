@@ -433,8 +433,46 @@ search_queries:
 # When the public careers URL is a branded custom domain (e.g.
 # careers.adyen.com), set `provider: smartrecruiters` explicitly to
 # bypass detect(). The `provider:` field wins over auto-detection.
+#
+# ── freehire (faceted cross-board search) ─────────────────────────
+# Unlike the providers above, `freehire` is not a single company — it
+# is a faceted *search* across the freehire.dev aggregator, run through
+# the `freehire` CLI. One entry = one query. Authenticate once with
+# `freehire auth login`, then set `provider: freehire` and a nested
+# `freehire:` block. Facets are optional; at least a query OR one facet
+# is required. Enums: region = global|ru|cis|central_asia|eu|us;
+# seniority = intern|junior|middle|senior|staff|principal|lead|c_level.
+# Unknown enum values are dropped with a warning (never abort the scan).
+#
+#   - name: freehire — AI Engineer EU
+#     provider: freehire
+#     enabled: true
+#     freehire:
+#       query: "AI engineer"        # positional <query>
+#       limit: 50                   # --limit (default 50, max 200)
+#       remote: true                # --remote
+#       region: [eu, us]            # --region (repeatable)
+#       seniority: [senior, staff]  # --seniority (repeatable)
+#       category: [ml_ai]           # --category (repeatable)
+#       skills: [python, go]        # --skills (repeatable)
+#       company: [apollo-io]        # --company slug (repeatable)
+#       # bin: freehire             # override binary ($FREEHIRE_BIN or PATH)
+#       # api_url: https://...      # --api-url override
 
 tracked_companies:
+
+  # -- freehire faceted search (disabled by default; needs `freehire auth login`) --
+
+  - name: freehire — AI Engineer (remote, senior+)
+    provider: freehire
+    notes: "Faceted cross-board search via the freehire CLI. One entry = one query."
+    enabled: false
+    freehire:
+      query: "AI engineer"
+      limit: 50
+      remote: true
+      seniority: [senior, staff]
+      category: [ml_ai]
 
   # -- AI Labs & LLM providers --
 
