@@ -665,6 +665,62 @@ if (fileExists('providers/local-parser.mjs')) {
   fail('local-parser provider module is missing');
 }
 
+// freehire provider — CLI-backed faceted search source (no network in tests).
+if (fileExists('providers/freehire.mjs')) {
+  pass('freehire provider module exists');
+  const { default: freehire } = await import(pathToFileURL(join(ROOT, 'providers/freehire.mjs')).href);
+  if (freehire?.id === 'freehire') {
+    pass('freehire provider exports id "freehire"');
+  } else {
+    fail(`freehire provider id is "${freehire?.id}" (expected "freehire")`);
+  }
+  const claimsBlock = freehire.detect?.({ name: 'q', freehire: { query: 'go' } });
+  const claimsUrl = freehire.detect?.({ name: 'q', careers_url: 'https://freehire.dev/jobs' });
+  const ignoresAts = freehire.detect?.({ name: 'q', careers_url: 'https://job-boards.greenhouse.io/foo' });
+  if (claimsBlock && claimsUrl && ignoresAts === null) {
+    pass('freehire detect() claims freehire entries and ignores ATS URLs');
+  } else {
+    fail('freehire detect() routing is wrong (block/url/ATS)');
+  }
+  // The provider must persist a url→slug cache so freehire-jd.mjs can fetch full JDs.
+  const freehireSrc = readFile('providers/freehire.mjs');
+  if (freehireSrc.includes('writeJdCache') && freehireSrc.includes('freehire-cache.jsonl')) {
+    pass('freehire provider writes a url→slug JD cache at scan time');
+  } else {
+    fail('freehire provider does not persist a JD cache');
+  }
+} else {
+  fail('freehire provider module is missing');
+}
+
+// freehire-jd.mjs — full-JD helper (resolves url→slug via cache, calls `freehire job`).
+if (fileExists('freehire-jd.mjs')) {
+  pass('freehire-jd.mjs helper exists');
+  const jdSrc = readFile('freehire-jd.mjs');
+  if (jdSrc.includes('slugFromUrl') && jdSrc.includes("'job'") && jdSrc.includes('htmlToMarkdown')) {
+    pass('freehire-jd.mjs resolves url→slug and converts JD HTML to markdown');
+  } else {
+    fail('freehire-jd.mjs is missing url-resolution or HTML→markdown conversion');
+  }
+} else {
+  fail('freehire-jd.mjs helper is missing');
+}
+
+// freehire-sync.mjs — one-way mirror career-ops tracker → freehire account.
+if (fileExists('freehire-sync.mjs')) {
+  pass('freehire-sync.mjs helper exists');
+  const syncSrc = readFile('freehire-sync.mjs');
+  const safeDefault = syncSrc.includes('apply: false') && syncSrc.includes('--apply');
+  const maps = syncSrc.includes('STATUS_TO_STAGE') && syncSrc.includes("Interview: 'interview'");
+  if (safeDefault && maps) {
+    pass('freehire-sync.mjs is dry-run by default and maps statuses to freehire stages');
+  } else {
+    fail('freehire-sync.mjs missing safe-default dry-run or status→stage mapping');
+  }
+} else {
+  fail('freehire-sync.mjs helper is missing');
+}
+
 const scanMode = fileExists('modes/scan.md') ? readFile('modes/scan.md') : '';
 if (
   scanMode.includes('local_parser_ok') &&
